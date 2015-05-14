@@ -16,7 +16,7 @@ options = {
 }
 
 parser = OptionParser.new do |o|
-  o.on "--account_id ACCOUNT ID", "Default account id to use when generating arns (default: 1234567890)" do |account_id|
+  o.on "--accountid ACCOUNT ID", "Default account id to use when generating arns (default: 1234567890)" do |account_id|
     $account_id = account_id
   end
 
