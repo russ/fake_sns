@@ -35,7 +35,7 @@ module FakeSNS
     def sqs
       sqs = Aws::SQS::Client.new(endpoint: config["endpoint"])
       queue_url = sqs.list_queues(queue_name_prefix: config["queue_name"]).queue_urls.last
-      qs.send_message(queue_url: queue_url, message_body: message_contents)
+      sqs.send_message(queue_url: queue_url, message_body: message_contents)
     end
 
     def http
