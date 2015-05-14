@@ -3,7 +3,6 @@ require "sinatra/base"
 
 module FakeSNS
   class Server < Sinatra::Base
-
     before do
       content_type :xml
     end
@@ -25,7 +24,7 @@ module FakeSNS
     post "/" do
       database.transaction do
         begin
-          response = database.perform(action, params)
+          response = database.perform(action, params.merge(settings))
           status 200
           erb :"#{response.template}.xml", scope: response
         rescue Exception => error

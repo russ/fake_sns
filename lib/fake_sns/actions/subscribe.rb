@@ -5,6 +5,7 @@ module FakeSNS
       param endpoint: "Endpoint"
       param protocol: "Protocol"
       param topic_arn: "TopicArn"
+      param account_id: "account_id"
 
       attr_reader :topic
 
@@ -29,7 +30,7 @@ module FakeSNS
 
       def new_subscription
         attributes = {
-          "arn"       => "#{topic_arn}:#{SecureRandom.uuid}",
+          "arn"       => "#{topic_arn}:#{account_id}",
           "protocol"  => protocol,
           "endpoint"  => endpoint,
           "topic_arn" => topic_arn,

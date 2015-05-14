@@ -7,14 +7,18 @@ require 'fake_sns'
 require 'optparse'
 
 options = {
-  :port      => 9292,
-  :host      => "0.0.0.0",
-  :verbose   => false,
-  :daemonize => false,
-  :database  => nil,
+  port:      9292,
+  host:      "0.0.0.0",
+  verbose:   false,
+  daemonize: false,
+  database:  nil,
+  account_id: 1234567890,
 }
 
 parser = OptionParser.new do |o|
+  o.on "--account_id ACCOUNT ID", "Default account id to use when generating arns (default: 1234567890)" do |account_id|
+    options[:account_id] = account_id
+  end
 
   o.on "--database FILENAME", "Place to store the database (defaults to ~/.fake_sns.yml)" do |filename|
     options[:database] = filename
@@ -53,7 +57,6 @@ parser = OptionParser.new do |o|
     puts o
     exit
   end
-
 end
 
 parser.parse!
