@@ -24,7 +24,7 @@ module FakeSNS
     post "/" do
       database.transaction do
         begin
-          response = database.perform(action, params.merge(settings))
+          response = database.perform(action, params.merge(account_id: settings.account_id))
           status 200
           erb :"#{response.template}.xml", scope: response
         rescue Exception => error
