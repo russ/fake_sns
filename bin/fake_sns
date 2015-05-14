@@ -17,7 +17,7 @@ options = {
 
 parser = OptionParser.new do |o|
   o.on "--account_id ACCOUNT ID", "Default account id to use when generating arns (default: 1234567890)" do |account_id|
-    options[:account_id] = account_id
+    $account_id = account_id
   end
 
   o.on "--database FILENAME", "Place to store the database (defaults to ~/.fake_sns.yml)" do |filename|

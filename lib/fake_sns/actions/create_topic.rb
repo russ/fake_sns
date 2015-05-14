@@ -2,7 +2,6 @@ module FakeSNS
   module Actions
     class CreateTopic < Action
       param name: "Name"
-      param account_id: "account_id"
 
       def valid_name?
         name =~ /\A[\w\-]+\z/
@@ -29,7 +28,7 @@ module FakeSNS
       end
 
       def generate_arn
-        "arn:aws:sns:us-east-1:#{account_id}:#{name}"
+        "arn:aws:sns:us-east-1:#{$account_id}:#{name}"
       end
 
       def existing_topic
