@@ -33,10 +33,9 @@ module FakeSNS
     protected
 
     def sqs
-      queue_name = endpoint.split(":").last
-      sqs = AWS::SQS.new(config["aws_config"] || {})
-      queue = sqs.queues.named(queue_name)
-      queue.send_message(message_contents)
+      sqs = Aws::SQS::Client.new(endpoint: "http://localhost:4569")
+      queue_url = sqs.list_queues(queue_name_prefix: config["queue_name"]).queue_urls.last
+      sqs.send_message(queue_url: queue_url, message_body: message_contents)
     end
 
     def http

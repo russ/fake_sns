@@ -1,29 +1,29 @@
 require "sinatra/base"
 require 'json_expressions/rspec'
+require "json"
 
 RSpec.describe "Drain messages", :sqs do
-
   it "works for SQS" do
-    topic = sns.topics.create("my-topic")
-    queue = sqs.queues.create("my-queue")
-    topic.subscribe(queue)
+    topic = sns_resource.create_topic(name: "my-topic")
+    queue_url = sqs.create_queue(queue_name: "my-queue").queue_url
+    topic.subscribe(queue_url, protocol: "sqs", endpoint: "http://localhost:4569")
 
-    topic.publish("X")
+    topic.publish(message: JSON.generate({ sqs: "X" }))
 
-    $fake_sns.drain
-    expect(queue.visible_messages).to eq 1
+    $fake_sns.drain(nil, queue_name: "my-queue")
+    expect(sqs.receive_message(queue_url: queue_url, max_number_of_messages: 10).count).to eq(1)
   end
 
   it "works for SQS with a single message" do
-    topic = sns.topics.create("my-topic")
-    queue = sqs.queues.create("my-queue")
-    topic.subscribe(queue)
+    topic = sns_resource.create_topic(name: "my-topic")
+    queue_url = sqs.create_queue(queue_name: "my-queue").queue_url
+    topic.subscribe(queue_url, protocol: "sqs", endpoint: "http://localhost:4569")
 
-    message_id = topic.publish("X")
-    topic.publish("Y")
+    message_id = topic.publish(message: JSON.generate({ sqs: "X" }))
+    topic.publish(message: JSON.generate({ sqs: "Y" }))
 
-    $fake_sns.drain(message_id)
-    expect(queue.visible_messages).to eq 1
+    $fake_sns.drain(message_id.message_id, queue_name: "my-queue")
+    expect(sqs.receive_message(queue_url: queue_url, max_number_of_messages: 10).count).to eq(1)
   end
 
   it "works for HTTP" do
@@ -43,10 +43,10 @@ RSpec.describe "Drain messages", :sqs do
       target_app.run!
     end
 
-    topic = sns.topics.create("my-topic")
-    subscription = topic.subscribe("http://localhost:5051/endpoint")
+    topic = sns_resource.create_topic(name: "my-topic")
+    subscription = topic.subscribe(endpoint: "http://localhost:5051/endpoint", protocol: "http")
 
-    message_id = topic.publish("X")
+    message_id = topic.publish(message: JSON.generate({ default: "X" }))
 
     wait_for { Faraday.new("http://localhost:5051").get("/").success? rescue false }
 
@@ -58,25 +58,23 @@ RSpec.describe "Drain messages", :sqs do
     expect(requests.first).to match_json_expression(
       "Type"             => "Notification",
       "Message"          => "X",
-      "MessageId"        => message_id,
+      "MessageId"        => message_id.message_id,
       "Signature"        => "Fake",
       "SignatureVersion" => "1",
       "SigningCertURL"   => "https://sns.us-east-1.amazonaws.com/SimpleNotificationService-f3ecfb7224c7233fe7bb5f59f96de52f.pem",
       "Subject"          => nil,
       "Timestamp"        => anything,
       "TopicArn"         => topic.arn,
-      "Type"             => "Notification",
       "UnsubscribeURL"   => "",
     )
 
     expect(_headers.size).to eq 1
     expect(_headers.first).to match_json_expression({
       "HTTP_X_AMZ_SNS_MESSAGE_TYPE"     => "Notification",
-      "HTTP_X_AMZ_SNS_MESSAGE_ID"       => message_id,
+      "HTTP_X_AMZ_SNS_MESSAGE_ID"       => message_id.message_id,
       "HTTP_X_AMZ_SNS_TOPIC_ARN"        => topic.arn,
       "HTTP_X_AMZ_SNS_SUBSCRIPTION_ARN" => subscription.arn,
     }.ignore_extra_keys!)
-
   end
 
   def wait_for(&condition)
@@ -86,5 +84,4 @@ RSpec.describe "Drain messages", :sqs do
       end
     end
   end
-
 end

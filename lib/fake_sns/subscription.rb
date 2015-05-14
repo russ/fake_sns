@@ -1,6 +1,5 @@
 module FakeSNS
   class Subscription
-
     include Virtus.model
 
     attribute :arn, String
@@ -14,6 +13,5 @@ module FakeSNS
     def sqs?
       protocol == "sqs"
     end
-
   end
 end

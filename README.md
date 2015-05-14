@@ -56,16 +56,6 @@ $ gem install fake_sns
 $ fake_sns -p 9292
 ```
 
-To configure AWS-SDK to send messages here:
-
-``` ruby
-AWS.config(
-  use_ssl:       false,
-  sns_endpoint:  "0.0.0.0",
-  sns_port:      9292,
-)
-```
-
 ### Command line options
 
 Get help by running `fake_sns --help`. These options are basically the same as
@@ -131,13 +121,10 @@ Here are the methods you need to run FakeSNS programmatically.
 require "fake_sns/test_integration"
 
 # globally, before the test suite starts:
-AWS.config(
-  use_ssl:            false,
-  sns_endpoint:       "localhost",
-  sns_port:           4568,
+Aws.config = {
   access_key_id:      "fake access key",
   secret_access_key:  "fake secret key",
-)
+}
 fake_sns = FakeSNS::TestIntegration.new
 
 # before each test that requires SNS:

@@ -62,7 +62,7 @@ module FakeSNS
 
     def drain(message_id = nil, options = {})
       path = message_id ? "/drain/#{message_id}" : "/drain"
-      default = { aws_config: AWS.config.send(:supplied) }
+      default = { aws_config: Aws.config[:supplied] }
       body = default.merge(options).to_json
       result = connection.post(path, body)
       if result.success?
@@ -83,7 +83,7 @@ module FakeSNS
     end
 
     def option(key)
-      options.fetch(key) { AWS.config.public_send(key) }
+      options.fetch(key) { Aws.config[key] }
     end
 
 
